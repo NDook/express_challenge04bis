@@ -1,7 +1,7 @@
 const database = require("./database");
 
 const getUser = (req, res) => {
-  let sql = "select * from users";
+  let sql = "select firstname, lastname, email, city, language from users";
   const sqlValue = [];
 
   if (req.query.language) {
@@ -29,7 +29,7 @@ const getUserById = (req, res) => {
   const id = parseInt(req.params.id);
 
   database
-    .query("select * from users where id = ?", [id])
+    .query("select firstname, lastname, email, city, language from users where id = ?", [id])
     .then(([users]) => {
       if(users[0]) {
         res.json(users[0]);
