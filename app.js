@@ -27,13 +27,15 @@ app.delete("/api/movies/:id", movieHandlers.deleteMovie);
 
 
 const usersHandlers = require("./usersHandlers");
+const { hashPassword } = require("./auth.js");
 
 app.get("/api/users", usersHandlers.getUser);
 app.get("/api/users/:id", usersHandlers.getUserById);
-app.post("/api/users/",validateUser, usersHandlers.postUser);
+
 app.put("/api/users/:id",validateUser, usersHandlers.updateUser);
 app.delete("/api/users/:id", usersHandlers.deleteUser);
 
+app.post("/api/users", hashPassword, usersHandlers.postUser);
 
 app.listen(port, (err) => {
   if (err) {

@@ -2,15 +2,17 @@
 
 const Joi = require('joi');
 
+
 const movieShema = Joi.object({
+    
     title: Joi.string()
-        .alphanum()
+        .pattern(/\w/)
         .min(1)
         .max(255)
         .required(),
 
     director: Joi.string()
-        .alphanum()
+        .pattern(/\w/)
         .min(1)
         .max(255)
         .required(),
@@ -39,14 +41,14 @@ const validateMovie = (req, res, next) => {
     const { title, director, year, color, duration } = req.body;
     
     const { error }= movieShema.validate(
-        { title, director, year, color, duration },
-        {abordEarly: false}
+        { title, director, year, color, duration },        
+        { abordEarly: false }
     );
 
     if (error) {
         res.status(422).json({ validationErrors: error.details });
     } else {
-        next();
+        next();    
     }
 }
 
