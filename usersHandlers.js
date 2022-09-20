@@ -1,7 +1,7 @@
 const database = require("./database");
 
 const getUser = (req, res) => {
-  let sql = "select firstname, lastname, email, city, language from users";
+  let sql = "select id, firstname, lastname, email, city, language from users";
   const sqlValue = [];
 
   if (req.query.language) {
@@ -27,19 +27,41 @@ const getUser = (req, res) => {
 
 const getUserById = (req, res) => {
   const id = parseInt(req.params.id);
-
+  
   database
-    .query("select firstname, lastname, email, city, language from users where id = ?", [id])
-    .then(([users]) => {
-      if(users[0]) {
+    .query("select id, firstname, lastname, email, city, language from users where id = ?", [id])
+    .then(([users]) => {      
+
+      if (users[0]) {
         res.json(users[0]);
       } else {
-        res.status(404).send("Not found");
+        res.status(404);
       }
       
     })
     .catch((err) => {
-      err.status(404);
+      console.error(err);
+      res.status(500).send("Error retrieving data from database")
+    });
+};
+
+const getUserByEmailWithPasswordAndPassToNext = (req, res, next) => {
+  const { email } = req.body;
+
+  database
+    .query("select * from users where email = ? ", [email])
+    .then(([users]) => {
+      if (users[0] != null) {
+        req.user = users[0];
+
+        next();
+      } else {
+        res.sendStatus(401);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error retrieving data from database");
     });
 };
 
@@ -64,7 +86,8 @@ const postUser = (req, res)  => {
   const updateUser = (req, res) => {
     const id = parseInt(req.params.id);
     const { firstname, lastname, email, city, language } = req.body;
-  
+    const sub = parseInt(req.payload.sub);
+    console.log(sub)
     database
       .query(
         "UPDATE users set firstname = ?, lastname = ?, email = ?, city = ?, language = ? where id = ?",
@@ -72,7 +95,9 @@ const postUser = (req, res)  => {
       )
       .then(([result]) => {
         //console.log(result);
-        if (result.affectedRows === 0) {
+        if (id != sub ) {
+          res.status(403).send("fuck")
+        } else if (result.affectedRows === 0) {
           res.status(404).send("Not Found");
         } else {
           res.sendStatus(204);
@@ -93,7 +118,9 @@ const postUser = (req, res)  => {
     )
     .then(([result]) => {
       //console.log(result);
-      if (result.affectedRows === 0) {
+      if (id != sub ) {
+        res.status(403).send("fuck")
+      } else if (result.affectedRows === 0) {
         res.status(404).send("Not Found");
       } else {
         res.sendStatus(204);
@@ -108,6 +135,7 @@ const postUser = (req, res)  => {
 module.exports = {
   getUser,
   getUserById,
+  getUserByEmailWithPasswordAndPassToNext,
   postUser,
   updateUser,
   deleteUser
